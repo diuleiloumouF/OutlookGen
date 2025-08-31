@@ -177,8 +177,8 @@ class eGen:
                 return driver.find_element(by, value)
             sleep(delay)
             count += 1
-        self.print(f'tried 100 time to find element...')
-        driver.quit()
+        self.print(f'tried 100 time to find element...{by} {value}')
+        # driver.quit()
         return
 
     def get_balance(self):
@@ -234,83 +234,110 @@ class eGen:
         # Create Email Function
         try:
             global eGenerated, solvedCaptcha
-            self.update()
+            # self.update()
+            self.print('12321')
             self.Timer.start(time()) if self.config["Common"]['Timer'] else ''
-            driver.get("https://outlook.live.com/owa/?nlp=1&signup=1")
+            self.print("CreateEmail")
+            driver.get("https://outlook.live.com/mail/0/?prompt=create_account")
             assert 'Create' in driver.title
             if self.config['EmailInfo']['Domain'] == "@hotmail.com":
                 domain = self.fElement(driver, By.ID, 'LiveDomainBoxList')
                 sleep(0.1)
                 domainObject = Select(domain)
                 domainObject.select_by_value('hotmail.com')
-            emailInput = self.fElement(driver, By.ID, 'MemberName')
+            emailInput = self.fElement(driver, By.ID, 'floatingLabelInput6')
             emailInput.send_keys(self.email)
             self.print(f"email: {self.email}{self.config['EmailInfo']['Domain']}")
-            self.fElement(driver, By.ID, 'iSignupAction').click()
+            # 找到按钮元素
+            button = self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]')
+            sleep(3)
+            # 点击按钮
+            button.click()
             with suppress(Exception):
                 self.print(driver.find_element(By.ID, 'MemberNameError').text)
                 self.print("email is already taken")
-                driver.quit()
+                # driver.quit()
                 return
-            passwordinput = self.fElement(driver, By.ID, 'PasswordInput')
+            passwordinput = self.fElement(driver, By.ID, 'floatingLabelInput12')
             passwordinput.send_keys(self.password)
             self.print("Password: %s" % self.password)
-            self.fElement(driver, By.ID, 'iSignupAction').click()
-            first = self.fElement(driver, By.ID, "FirstName")
-            first.send_keys(self.first_name)
-            sleep(.3)
-            last = self.fElement(driver, By.ID, "LastName")
-            last.send_keys(self.last_name)
-            self.fElement(driver, By.ID, 'iSignupAction').click()
-            dropdown = self.fElement(driver, By.ID, "Country")
-            dropdown.find_element(By.XPATH, "//option[. = 'Turkey']").click()
-            birthMonth = self.fElement(driver, By.ID, "BirthMonth")
-            objectMonth = Select(birthMonth)
-            objectMonth.select_by_value(str(randint(1, 12)))
-            birthMonth = self.fElement(driver, By.ID, "BirthDay")
-            objectMonth = Select(birthMonth)
-            objectMonth.select_by_value(str(randint(1, 28)))
-            birthYear = self.fElement(driver, By.ID, "BirthYear")
+            self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]').click()
+            # 月份选择 - 点击月份标签
+            sleep(2)
+            birthMonth = self.fElement(driver, By.CSS_SELECTOR, 'label[for="BirthMonthDropdown"]')
+            driver.execute_script("arguments[0].click();", birthMonth)
+            sleep(2)
+            # 获取所有月份选项并随机选择
+            month_options = driver.find_elements(By.CSS_SELECTOR, 'div[role="option"].fui-Option')
+            random_month = choice(month_options)
+            driver.execute_script("arguments[0].click();", random_month)
+            sleep(2)
+            # 日期选择 - 点击日期标签
+            birthDay = self.fElement(driver, By.CSS_SELECTOR, 'label[for="BirthDayDropdown"]')
+            driver.execute_script("arguments[0].click();", birthDay)
+            sleep(2)
+            # 获取所有日期选项并随机选择
+            day_options = driver.find_elements(By.CSS_SELECTOR, 'div[role="option"].fui-Option')
+            if day_options:
+                random_day = choice(day_options)
+                driver.execute_script("arguments[0].click();", random_day)
+            sleep(2)
+            # 年份输入（如果年份仍然是输入框的话）
+            birthYear = self.fElement(driver, By.ID, "floatingLabelInput22")
             birthYear.send_keys(
                 str(randint(self.config['EmailInfo']['minBirthDate'], self.config['EmailInfo']['maxBirthDate'])))
-            self.fElement(driver, By.ID, 'iSignupAction').click()
-            driver.switch_to.frame(self.fElement(driver, By.ID, 'enforcementFrame'))
-            token = self.solver(driver.current_url, self.driver)
-            sleep(0.5)
-            driver.execute_script(
-                'parent.postMessage(JSON.stringify({eventId:"challenge-complete",payload:{sessionToken:"' + token + '"}}),"*")')
-            self.print("&aCaptcha Solved")
-            self.update()
-            self.fElement(driver, By.ID, 'idBtn_Back').click()
+            self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]').click()
+
+            sleep(3)
+            # 输入姓名
+            first = self.fElement(driver, By.ID, "firstNameInput")
+            first.send_keys(self.first_name)
+            sleep(3)
+            last = self.fElement(driver, By.ID, "lastNameInput")
+            last.send_keys(self.last_name)
+            self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]').click()
+            sleep(3)
+
+            # driver.switch_to.frame(self.fElement(driver, By.ID, 'enforcementFrame'))
+            # token = self.solver(driver.current_url, self.driver)
+            # sleep(0.5)
+            # driver.execute_script(
+            #     'parent.postMessage(JSON.stringify({eventId:"challenge-complete",payload:{sessionToken:"' + token + '"}}),"*")')
+            # self.print("&aCaptcha Solved")
+            # self.update()
+            # self.fElement(driver, By.ID, 'idBtn_Back').click()
             self.print(f'Email Created in {str(self.Timer.timer(time())).split(".")[0]}s') if \
                 self.config["Common"]['Timer'] else self.print('Email Created')
             eGenerated += 1
             self.Utils.logger(self.email + self.config['EmailInfo']['Domain'], self.password)
             self.update()
-            driver.quit()
+            # driver.quit()
         except Exception as e:
             if e == KeyboardInterrupt:
-                driver.quit()
+                # driver.quit()
                 exit(0)
             self.print("&4Something is wrong | %s" % str(e).split("\n")[0].strip())
         finally:
-            driver.quit()
+            self.print("finaly")
+            # driver.quit()
 
     def run(self):
         # Run Script Function
         self.print('&bCoded with &c<3&b by MatrixTeam')
-        with suppress(IndexError):
-            while True:
-                    self.generate_info()
-                    proxy = choice(self.proxies)  # Select Proxy
-                    if not self.check_proxy(proxy):
-                        self.print("&c%s &f| &4Invalid Proxy&f" % proxy)
-                        self.proxies.remove(proxy)
-                        continue
-                    self.print(proxy)
-                    self.options.add_argument("--proxy-server=http://%s" % proxy)
-                    self.CreateEmail(driver=webdriver.Chrome(options=self.options, desired_capabilities=self.capabilities))
-        self.print("&4No Proxy Available, Exiting!")
+        self.generate_info()
+        self.CreateEmail(driver=webdriver.Chrome(options=self.options, desired_capabilities=self.capabilities))
+        # with suppress(IndexError):
+        #     while True:
+        #             self.generate_info()
+        #             proxy = choice(self.proxies)  # Select Proxy
+        #             if not self.check_proxy(proxy):
+        #                 self.print("&c%s &f| &4Invalid Proxy&f" % proxy)
+        #                 self.proxies.remove(proxy)
+        #                 continue
+        #             self.print(proxy)
+        #             self.options.add_argument("--proxy-server=http://%s" % proxy)
+        #             self.CreateEmail(driver=webdriver.Chrome(options=self.options, desired_capabilities=self.capabilities))
+        # self.print("&4No Proxy Available, Exiting!")
 
 
 
