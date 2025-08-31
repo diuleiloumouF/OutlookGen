@@ -295,6 +295,7 @@ class eGen:
             sleep(3)
             last = self.fElement(driver, By.ID, "lastNameInput")
             last.send_keys(self.last_name)
+            sleep(3)
             self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]').click()
             sleep(3)
 
