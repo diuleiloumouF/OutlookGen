@@ -134,6 +134,7 @@ class eGen:
         self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
         self.options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.options.add_experimental_option('useAutomationExtension', False)
+        
 
     def solver(self, site_url, browser):
         # Solve Captcha Function
@@ -231,6 +232,12 @@ class eGen:
                                      '&0': Fore.BLACK}), end=end)
 
     def CreateEmail(self, driver: WebDriver):
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+            delete navigator.__proto__.webdriver;
+            Object.defineProperty(navigator, 'webdriver', { get: () => false });
+            """
+        })
         # Create Email Function
         try:
             global eGenerated, solvedCaptcha
@@ -253,12 +260,14 @@ class eGen:
             sleep(3)
             # 点击按钮
             button.click()
+            sleep(3)
             with suppress(Exception):
                 self.print(driver.find_element(By.ID, 'MemberNameError').text)
                 self.print("email is already taken")
                 # driver.quit()
                 return
             passwordinput = self.fElement(driver, By.ID, 'floatingLabelInput12')
+            sleep(3)
             passwordinput.send_keys(self.password)
             self.print("Password: %s" % self.password)
             self.fElement(driver, By.CSS_SELECTOR, '[data-testid="primaryButton"]').click()
@@ -311,6 +320,8 @@ class eGen:
                 self.config["Common"]['Timer'] else self.print('Email Created')
             eGenerated += 1
             self.Utils.logger(self.email + self.config['EmailInfo']['Domain'], self.password)
+
+            sleep(1000)
             self.update()
             # driver.quit()
         except Exception as e:

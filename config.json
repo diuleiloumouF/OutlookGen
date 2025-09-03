@@ -15,7 +15,7 @@
     "Domain": "@outlook.com",
     "minBirthDate": 1980,
     "maxBirthDate": 1999,
-    "PasswordLength": 10,
+    "PasswordLength": 8,
     "FirstNameLength": 5,
     "LastNameLength": 5
   },
@@ -28,6 +28,7 @@
     "--disable-blink-features=AutomationControlled",
     "--disable-gpu",
     "--no-sandbox",
-    "--lang=en"
+    "--lang=en",
+    "--user-agent=Mozilla/5.0 (X11; CrOS x86_64 14989.107.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
   ]
 }
